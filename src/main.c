@@ -5,11 +5,10 @@ int main(int argc, char* argv[])
 {
     char* cleaned_input;
     clean_input(&cleaned_input, argv, argc);
+
     parse_and_node(cleaned_input, strlen(cleaned_input));
 
-    printf("%f\n", stringToFloat("3456"));
-
-
+/*
     Node left_test2 = {NULL, NULL, false, 10};
     Node right_test2 = {NULL, NULL, false, 25};
 
@@ -20,6 +19,7 @@ int main(int argc, char* argv[])
 
     resolve_node(&test_node);
     printf("%f\n", test_node.value);
+*/
     
     return 0;
 }

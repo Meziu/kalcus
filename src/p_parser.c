@@ -93,20 +93,63 @@ void clean_input(char** end_str, char* inputs[], int n)
 }
 
 
-void fill_operations_string(char* operations_str, const char* input_str)
+int fill_operations_string(char* operations_str, const char* input_str)
 {
-    int found_at = chars_in_string(input_str, operation_symbols, 5, 0);
-    for (int i=0; found_at != -1; i+=1)
+    int found_at = chars_in_string(input_str, operation_symbols, strlen(operation_symbols), 0);
+    int i = 0;
+    while (found_at != -1)
     {
         operations_str[i] = input_str[found_at];
-        found_at = chars_in_string(input_str, operation_symbols, 5, found_at+1);
-    }    
+        found_at = chars_in_string(input_str, operation_symbols, strlen(operation_symbols), found_at+1);
+        i++;
+    }
+    return i;
 }
 
-int parse_and_node(const char* input, int input_length)
+int get_input_array(char* input, char* output[])
 {
-    char* operation_findings = malloc(input_length);
+    char* temp_input = malloc(strlen(input));
+    strcpy(temp_input, input);
+    printf("%s\n", temp_input);
 
-    fill_operations_string(operation_findings, input);
+    char* current_string = strtok(temp_input, operation_symbols);
+    int i = 0;
+
+    while (current_string != NULL)
+    {
+        output[i++] = current_string;
+        current_string = strtok(NULL, operation_symbols);
+    }
+    return i;
+}
+
+int parse_and_node(char* input, int input_length)
+{
+    /* get all of the operations and store them in an *oversized* string, 
+       to then re-store them in a smaller one */
+    char* temp_operation_findings = malloc(input_length);
+    int operation_findings_len = fill_operations_string(temp_operation_findings, input);
+    char* operation_findings = malloc(operation_findings_len);
+
+    memcpy(operation_findings, temp_operation_findings, operation_findings_len);
+    free(temp_operation_findings);
+
+
+    // same as above, but for the values
+    char** temp_values_array = malloc(input_length*8);
+    int values_array_len = get_input_array(input, temp_values_array);
+    char** values_array = malloc(values_array_len);
+
+    memcpy(values_array, temp_values_array, values_array_len*8);
+    free(temp_values_array);
+
+
+    // check if the number of "breaks" in the values array matches the number of operations inputted
+    if (operation_findings_len != values_array_len-1)
+        e_call_error(ERR_INVALID_INPUT);
+    
+
     printf("OPERATIONS FOUND: %s\n", operation_findings);
+    for (int i=0; i<values_array_len; i++)
+        printf("%s\n", values_array[i]);
 }
