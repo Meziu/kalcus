@@ -93,63 +93,62 @@ void clean_input(char** end_str, char* inputs[], int n)
 }
 
 
-int fill_operations_string(char* operations_str, const char* input_str)
+typedef struct
 {
-    int found_at = chars_in_string(input_str, operation_symbols, strlen(operation_symbols), 0);
-    int i = 0;
-    while (found_at != -1)
-    {
-        operations_str[i] = input_str[found_at];
-        found_at = chars_in_string(input_str, operation_symbols, strlen(operation_symbols), found_at+1);
-        i++;
-    }
-    return i;
-}
+    char** array;
+    int length;
+} string_array;
 
-int get_input_array(char* input, char* output[])
+
+string_array get_input_array(char* input)
 {
-    char* temp_input = malloc(strlen(input));
-    strcpy(temp_input, input);
-    printf("%s\n", temp_input);
+    const int input_len = strlen(input);
 
-    char* current_string = strtok(temp_input, operation_symbols);
-    int i = 0;
+    char** temp_output     = malloc(input_len*8);
+    char*  temp_out_string = malloc(1);
 
-    while (current_string != NULL)
+    int current_search  = strcspn(input, operation_symbols);
+    int search_stack    = 0;
+    int output_array_length = 0;
+
+    char* temp_input = input;
+
+    while (input_len > search_stack)
     {
-        output[i++] = current_string;
-        current_string = strtok(NULL, operation_symbols);
+        if (current_search == 0)
+            current_search = 1;
+
+        temp_out_string = realloc(temp_out_string, current_search+1);
+        memset(temp_out_string, 0, current_search+1);
+        memcpy(temp_out_string, temp_input, current_search);
+
+        temp_output[output_array_length] = malloc(current_search+1);
+        memcpy(temp_output[output_array_length], temp_out_string, current_search+1);
+
+        output_array_length += 1;
+        search_stack        += current_search;
+        temp_input           = input + search_stack;
+
+        current_search = strcspn(temp_input, operation_symbols);
     }
-    return i;
+
+    char** output = malloc(output_array_length*8);
+    memcpy(output, temp_output, output_array_length*8);
+
+
+    free(temp_output);
+    free(temp_out_string);
+    return (string_array){output, output_array_length};
 }
 
 int parse_and_node(char* input, int input_length)
 {
-    /* get all of the operations and store them in an *oversized* string, 
-       to then re-store them in a smaller one */
-    char* temp_operation_findings = malloc(input_length);
-    int operation_findings_len = fill_operations_string(temp_operation_findings, input);
-    char* operation_findings = malloc(operation_findings_len);
+    string_array input_array = get_input_array(input);
 
-    memcpy(operation_findings, temp_operation_findings, operation_findings_len);
-    free(temp_operation_findings);
+    printf("%d\n\n", input_array.length);
 
+    for (int i=0; i<input_array.length; i+=1)
+        printf("%s\n", input_array.array[i]);
 
-    // same as above, but for the values
-    char** temp_values_array = malloc(input_length*8);
-    int values_array_len = get_input_array(input, temp_values_array);
-    char** values_array = malloc(values_array_len);
-
-    memcpy(values_array, temp_values_array, values_array_len*8);
-    free(temp_values_array);
-
-
-    // check if the number of "breaks" in the values array matches the number of operations inputted
-    if (operation_findings_len != values_array_len-1)
-        e_call_error(ERR_INVALID_INPUT);
-    
-
-    printf("OPERATIONS FOUND: %s\n", operation_findings);
-    for (int i=0; i<values_array_len; i++)
-        printf("%s\n", values_array[i]);
+    free(input_array.array);
 }

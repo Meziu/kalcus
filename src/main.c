@@ -6,6 +6,25 @@ int main(int argc, char* argv[])
     char* cleaned_input;
     clean_input(&cleaned_input, argv, argc);
 
+/*
+    char* str1 = "Lmao";
+    char* str2 = "L";
+
+    int search_stack = 1;
+
+    int len = strcspn(str1, str2);
+
+    search_stack += len;
+
+    len = strcspn(str1+search_stack, str2);
+
+    search_stack += len;
+
+    printf("First matched character is at %d\n", len);
+    printf("%ld\n", strlen(str1));
+    printf("%d\n", search_stack);
+*/
+
     parse_and_node(cleaned_input, strlen(cleaned_input));
 
 /*
