@@ -15,6 +15,17 @@ enum
 
 extern float (*operations[])(float, float);
 
+
+typedef struct
+{
+    void** array;
+    int length;
+} array;
+
+void free_array(array arr);
+void remove_at(array* arr, int index);
+
+
 typedef struct Node Node;
 
 struct Node
@@ -28,3 +39,4 @@ struct Node
 
 void resolve_node(Node* node);
 void free_nodes(Node* node);
+Node* node_tree_from_array(array* raw_nodes);

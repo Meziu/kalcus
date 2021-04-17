@@ -93,45 +93,7 @@ void clean_input(char** end_str, char* inputs[], int n)
 }
 
 
-typedef struct
-{
-    void** array;
-    int length;
-} array;
 
-void free_array(array arr)
-{
-    for (int i=0; i<arr.length; i+=1)
-    {
-        free(arr.array[i]);
-    }
-    free(arr.array);
-}
-
-void remove_at(array* arr, int index)
-{
-    if (index > arr->length || arr->array == NULL)
-    {
-        printf("dude tf");
-        return;
-    }
-    
-    void** new_array = malloc(sizeof(void*)*(arr->length-1));
-
-    int t_in = 0;
-    for (int i=0; i<arr->length; i+=1)
-    {
-        if (i == index)
-            continue;
-        
-        new_array[t_in] = arr->array[i];
-        t_in += 1;
-    }
-
-    free(arr->array);
-    arr->array = new_array;
-    arr->length -= 1;
-}
 
 array parse_input(char* input)
 {
@@ -219,50 +181,6 @@ array make_nodes_array(array input_array)
     return output;
 }
 
-
-void _get_node_operands(array* nodes_array, int index)
-{
-    Node* left_node  = ((Node*)(nodes_array->array[index-1]));
-    Node* right_node = ((Node*)(nodes_array->array[index+1]));
-
-    Node* current_node = ((Node*)(nodes_array->array[index]));
-    current_node->left_child = left_node;
-    current_node->right_child = right_node;
-
-    remove_at(nodes_array, index-1);
-    remove_at(nodes_array, index);
-}
-
-Node* node_tree_from_array(array* raw_nodes)
-{
-    for (int i=0; i<raw_nodes->length; i+=1)
-    {
-        Node* current_node = ((Node*)(raw_nodes->array[i]));
-
-        if (current_node->is_operation)
-        {
-            if (current_node->value == OP_MULT || current_node->value == OP_DIV || current_node->value == OP_POW)
-            {
-                _get_node_operands(raw_nodes, i);
-                i-=1;
-            }
-        }
-    }
-    for (int i=0; i<raw_nodes->length; i+=1)
-    {
-        Node* current_node = ((Node*)(raw_nodes->array[i]));
-
-        if (current_node->is_operation)
-        {
-            if (current_node->value == OP_SUM || current_node->value == OP_SUB)
-            {
-                _get_node_operands(raw_nodes, i);
-                i-=1;
-            }
-        }
-    }
-    return raw_nodes->array[0];
-}
 
 int parse_and_node(char* input, int input_length)
 {
