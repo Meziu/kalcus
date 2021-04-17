@@ -95,12 +95,45 @@ void clean_input(char** end_str, char* inputs[], int n)
 
 typedef struct
 {
-    char** array;
+    void** array;
     int length;
-} string_array;
+} array;
 
+void free_array(array arr)
+{
+    for (int i=0; i<arr.length; i+=1)
+    {
+        free(arr.array[i]);
+    }
+    free(arr.array);
+}
 
-string_array get_input_array(char* input)
+void remove_at(array* arr, int index)
+{
+    if (index > arr->length || arr->array == NULL)
+    {
+        printf("dude tf");
+        return;
+    }
+    
+    void** new_array = malloc(sizeof(void*)*(arr->length-1));
+
+    int t_in = 0;
+    for (int i=0; i<arr->length; i+=1)
+    {
+        if (i == index)
+            continue;
+        
+        new_array[t_in] = arr->array[i];
+        t_in += 1;
+    }
+
+    free(arr->array);
+    arr->array = new_array;
+    arr->length -= 1;
+}
+
+array parse_input(char* input)
 {
     const int input_len = strlen(input);
 
@@ -138,17 +171,109 @@ string_array get_input_array(char* input)
 
     free(temp_output);
     free(temp_out_string);
-    return (string_array){output, output_array_length};
+    return (array){(void**)output, output_array_length};
+}
+
+array make_nodes_array(array input_array)
+{
+    array output = {malloc(8*input_array.length), input_array.length};
+
+    for (int i=0; i<input_array.length; i+=1)
+    {
+        char* value = (char*)(input_array.array[i]);
+        Node* new_node = malloc(sizeof(Node));
+
+        if (strcmp(value, "*")==0)
+        {
+            new_node->is_operation = true;
+            new_node->value        = OP_MULT;
+        }
+        else if (strcmp(value, "/")==0)
+        {
+            new_node->is_operation = true;
+            new_node->value        = OP_DIV;
+        }
+        else if (strcmp(value, "^")==0)
+        {
+            new_node->is_operation = true;
+            new_node->value        = OP_POW;
+        }
+        else if (strcmp(value, "+")==0)
+        {
+            new_node->is_operation = true;
+            new_node->value        = OP_SUM;
+        }
+        else if (strcmp(value, "-")==0)
+        {
+            new_node->is_operation = true;
+            new_node->value        = OP_SUB;
+        }
+        else
+        {
+            new_node->is_operation  = false;
+            new_node->value         = stringToFloat(value);
+        }
+
+        output.array[i] = new_node;
+    }
+    return output;
+}
+
+
+void _get_node_operands(array* nodes_array, int index)
+{
+    Node* left_node  = ((Node*)(nodes_array->array[index-1]));
+    Node* right_node = ((Node*)(nodes_array->array[index+1]));
+
+    Node* current_node = ((Node*)(nodes_array->array[index]));
+    current_node->left_child = left_node;
+    current_node->right_child = right_node;
+
+    remove_at(nodes_array, index-1);
+    remove_at(nodes_array, index);
+}
+
+Node* node_tree_from_array(array* raw_nodes)
+{
+    for (int i=0; i<raw_nodes->length; i+=1)
+    {
+        Node* current_node = ((Node*)(raw_nodes->array[i]));
+
+        if (current_node->is_operation)
+        {
+            if (current_node->value == OP_MULT || current_node->value == OP_DIV || current_node->value == OP_POW)
+            {
+                _get_node_operands(raw_nodes, i);
+                i-=1;
+            }
+        }
+    }
+    for (int i=0; i<raw_nodes->length; i+=1)
+    {
+        Node* current_node = ((Node*)(raw_nodes->array[i]));
+
+        if (current_node->is_operation)
+        {
+            if (current_node->value == OP_SUM || current_node->value == OP_SUB)
+            {
+                _get_node_operands(raw_nodes, i);
+                i-=1;
+            }
+        }
+    }
+    return raw_nodes->array[0];
 }
 
 int parse_and_node(char* input, int input_length)
 {
-    string_array input_array = get_input_array(input);
+    array input_array = parse_input(input);
 
-    printf("%d\n\n", input_array.length);
+    array nodes_array = make_nodes_array(input_array);
 
-    for (int i=0; i<input_array.length; i+=1)
-        printf("%s\n", input_array.array[i]);
+    Node* root = node_tree_from_array(&nodes_array);
+    resolve_node(root);
+    printf("%f\n", root->value);
 
-    free(input_array.array);
+    free_array(input_array);
+    free_array(nodes_array);
 }

@@ -19,3 +19,14 @@ void resolve_node(Node* node)
         node->is_operation = false;
     }
 }
+
+void free_nodes(Node* node)
+{
+    if (node->left_child != NULL)
+        free_nodes(node->left_child);
+
+    if (node->right_child != NULL)
+        free_nodes(node->right_child);
+
+    free(node);
+}

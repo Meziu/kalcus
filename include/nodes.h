@@ -27,3 +27,4 @@ struct Node
 };
 
 void resolve_node(Node* node);
+void free_nodes(Node* node);
