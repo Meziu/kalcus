@@ -159,7 +159,7 @@ array make_nodes_array(array* input_array)
                 size_t string_length = strlen((char*)(input_array->array[c+temp_i]));
 
                 parenthesis_array.array[c] = malloc(string_length);
-                memcpy(parenthesis_array.array[c], input_array->array[c+temp_i], string_length);
+                strcpy(parenthesis_array.array[c], input_array->array[c+temp_i]);
             }
 
             array new_nodes_array = make_nodes_array(&parenthesis_array);
