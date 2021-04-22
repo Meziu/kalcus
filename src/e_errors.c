@@ -19,6 +19,9 @@ void e_call_error(int err_code)
     case ERR_INVALID_INPUT:
         error_print(ERR_INVALID_INPUT_TXT);
         break;
+    case ERR_NON_MATCHING_BRACKETS:
+        error_print(ERR_NON_MATCHING_BRACKETS_TXT);
+        break;
     }
     exit(1);
 }

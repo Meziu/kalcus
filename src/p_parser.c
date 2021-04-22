@@ -1,7 +1,7 @@
 #include "p_parser.h"
 
 char* all_symbols       = "*/^+-.()";
-char* operation_symbols = "*/^+-";
+char* operation_symbols = "*/^+-()";
 
 int chars_in_string(const char* string, char* chars_array, int array_len, int start_from)
 {
@@ -84,15 +84,10 @@ void clean_input(char** end_str, char* inputs[], int n)
     // remove any spaces to reduce input
     remove_all_char(*end_str, ' ');
 
-    // this horrible crap is used until I implement parenthesis support
-    remove_all_char(*end_str, '(');
-    remove_all_char(*end_str, ')');
 
     // control if now the string is ok, otherwise throw a tantrum
     check_valid_characters(*end_str);
 }
-
-
 
 
 array parse_input(char* input)
@@ -136,16 +131,61 @@ array parse_input(char* input)
     return (array){(void**)output, output_array_length};
 }
 
-array make_nodes_array(array input_array)
+array make_nodes_array(array* input_array)
 {
-    array output = {malloc(8*input_array.length), input_array.length};
+    array temp_output = {malloc(8*input_array->length), input_array->length};
 
-    for (int i=0; i<input_array.length; i+=1)
+    int i;
+    for (i=0; i<input_array->length; i++)
     {
-        char* value = (char*)(input_array.array[i]);
+        char* value = (char*)(input_array->array[i]);
+        if (strcmp(value, "(")==0)
+        {
+            int t = i;
+            while (t<input_array->length)
+            {
+                if (strcmp(input_array->array[t], ")")==0)
+                    break;
+                t++;
+            }
+            if (t == input_array->length)
+                e_call_error(ERR_NON_MATCHING_BRACKETS);
+
+            int temp_i = i+1;
+            
+            array parenthesis_array = {malloc(8*(t-temp_i)), t-temp_i};
+            for (int c=0; c<parenthesis_array.length; c++)
+            {
+                size_t string_length = strlen((char*)(input_array->array[c+temp_i]));
+
+                parenthesis_array.array[c] = malloc(string_length);
+                memcpy(parenthesis_array.array[c], input_array->array[c+temp_i], string_length);
+            }
+
+            array new_nodes_array = make_nodes_array(&parenthesis_array);
+            Node* parenthesis_node = node_tree_from_array(&new_nodes_array);
+
+            for (int l=0; l<parenthesis_array.length+1; l++)
+            {
+                remove_at(input_array, i);
+            }
+
+            free_array(&parenthesis_array, true);
+            free_array(&new_nodes_array, false);
+
+            temp_output.array[i] = parenthesis_node;
+
+            continue;
+        }
+
+
         Node* new_node = malloc(sizeof(Node));
 
-        if (strcmp(value, "*")==0)
+        if (strcmp(value, ")")==0)
+        {
+            e_call_error(ERR_NON_MATCHING_BRACKETS);
+        }
+        else if (strcmp(value, "*")==0)
         {
             new_node->is_operation = true;
             new_node->value        = OP_MULT;
@@ -178,8 +218,14 @@ array make_nodes_array(array input_array)
 
         new_node->left_child = NULL;
         new_node->right_child = NULL;
-        output.array[i] = new_node;
+        temp_output.array[i] = new_node;
     }
+
+    array output = {malloc(8*i), i};
+    memcpy(output.array, temp_output.array, 8*i);
+
+    free_array(&temp_output, false);
+
     return output;
 }
 
@@ -188,13 +234,19 @@ int parse_and_node(char* input, int input_length)
 {
     array input_array = parse_input(input);
 
-    array nodes_array = make_nodes_array(input_array);
-    free_array(input_array, true);
+    array nodes_array = make_nodes_array(&input_array);
+
+    if (input_array.length == 0)
+        free_array(&input_array, false);
+    else
+        free_array(&input_array, true);
+    
+    
 
     Node* root = node_tree_from_array(&nodes_array);
     resolve_node(root);
     printf("%f\n", root->value);
 
-    free_array(nodes_array, false);
+    free_array(&nodes_array, false);
     free_nodes(&root);
 }

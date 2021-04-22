@@ -22,7 +22,7 @@ typedef struct
     int length;
 } array;
 
-void free_array(array arr, bool free_items);
+void free_array(array* arr, bool free_items);
 void remove_at(array* arr, int index);
 
 

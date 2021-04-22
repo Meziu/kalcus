@@ -49,13 +49,14 @@ void _get_node_operands(array* nodes_array, int index)
     remove_at(nodes_array, index);
 }
 
+#define node_has_children(x) (x->left_child != NULL || x->right_child != NULL)
 Node* node_tree_from_array(array* raw_nodes)
 {
     for (int i=0; i<raw_nodes->length; i+=1)
     {
         Node* current_node = ((Node*)(raw_nodes->array[i]));
 
-        if (current_node->is_operation)
+        if (current_node->is_operation && !node_has_children(current_node))
         {
             if (current_node->value == OP_MULT || current_node->value == OP_DIV || current_node->value == OP_POW)
             {
@@ -68,7 +69,7 @@ Node* node_tree_from_array(array* raw_nodes)
     {
         Node* current_node = ((Node*)(raw_nodes->array[i]));
 
-        if (current_node->is_operation)
+        if (current_node->is_operation && !node_has_children(current_node))
         {
             if (current_node->value == OP_SUM || current_node->value == OP_SUB)
             {
@@ -82,16 +83,18 @@ Node* node_tree_from_array(array* raw_nodes)
 
 
 
-void free_array(array arr, bool free_items)
+void free_array(array* arr, bool free_items)
 {
     if (free_items)
     {
-        for (int i=0; i<arr.length; i+=1)
+        for (int i=0; i<arr->length; i++)
         {
-            free(arr.array[i]);
+            free(arr->array[i]);
+            arr->array[i] = NULL;
         }
     }
-    free(arr.array);
+    free(arr->array);
+    arr->array = NULL;
 }
 
 void remove_at(array* arr, int index)
