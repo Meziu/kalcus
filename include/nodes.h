@@ -22,7 +22,7 @@ typedef struct
     int length;
 } array;
 
-void free_array(array arr);
+void free_array(array arr, bool free_items);
 void remove_at(array* arr, int index);
 
 
@@ -38,5 +38,5 @@ struct Node
 };
 
 void resolve_node(Node* node);
-void free_nodes(Node* node);
+void free_nodes(Node** node);
 Node* node_tree_from_array(array* raw_nodes);

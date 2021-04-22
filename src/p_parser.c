@@ -176,6 +176,8 @@ array make_nodes_array(array input_array)
             new_node->value         = stringToFloat(value);
         }
 
+        new_node->left_child = NULL;
+        new_node->right_child = NULL;
         output.array[i] = new_node;
     }
     return output;
@@ -187,11 +189,12 @@ int parse_and_node(char* input, int input_length)
     array input_array = parse_input(input);
 
     array nodes_array = make_nodes_array(input_array);
+    free_array(input_array, true);
 
     Node* root = node_tree_from_array(&nodes_array);
     resolve_node(root);
     printf("%f\n", root->value);
 
-    free_array(input_array);
-    free_array(nodes_array);
+    free_array(nodes_array, false);
+    free_nodes(&root);
 }

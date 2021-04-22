@@ -20,15 +20,16 @@ void resolve_node(Node* node)
     }
 }
 
-void free_nodes(Node* node)
+void free_nodes(Node** node)
 {
-    if (node->left_child != NULL)
-        free_nodes(node->left_child);
+    if ((*node)->left_child != NULL)
+        free_nodes(&((*node)->left_child));
 
-    if (node->right_child != NULL)
-        free_nodes(node->right_child);
+    if ((*node)->right_child != NULL)
+        free_nodes(&((*node)->right_child));
 
-    free(node);
+    free(*node);
+    *node = NULL;
 }
 
 void _get_node_operands(array* nodes_array, int index)
@@ -81,11 +82,14 @@ Node* node_tree_from_array(array* raw_nodes)
 
 
 
-void free_array(array arr)
+void free_array(array arr, bool free_items)
 {
-    for (int i=0; i<arr.length; i+=1)
+    if (free_items)
     {
-        free(arr.array[i]);
+        for (int i=0; i<arr.length; i+=1)
+        {
+            free(arr.array[i]);
+        }
     }
     free(arr.array);
 }
